@@ -1,7 +1,13 @@
 import { ClinicalConflict } from '@/types';
-import { AlertTriangle, Info, AlertCircle } from 'lucide-react';
+import { AlertTriangle, Info, AlertCircle, FileSearch } from 'lucide-react';
 
-export function ClinicalAlerts({ conflicts }: { conflicts: ClinicalConflict[] }) {
+export function ClinicalAlerts({ 
+  conflicts, 
+  onReview 
+}: { 
+  conflicts: ClinicalConflict[],
+  onReview: (conflict: ClinicalConflict) => void
+}) {
   if (conflicts.length === 0) {
     return (
       <div className="p-4 border border-neutral-800 rounded-xl bg-neutral-900/50 flex flex-col items-center justify-center h-full">
@@ -41,8 +47,12 @@ export function ClinicalAlerts({ conflicts }: { conflicts: ClinicalConflict[] })
               
               {conflict.requiresHumanReview && conflict.status === 'pending' && (
                 <div className="mt-3 flex gap-2">
-                  <button className={`text-xs px-3 py-1.5 rounded bg-[#111] border hover:bg-neutral-800
-                    ${isCritical ? 'border-red-900/50 text-red-400' : 'border-amber-900/50 text-amber-400'}`}>
+                  <button 
+                    onClick={() => onReview(conflict)}
+                    className={`text-xs px-3 py-1.5 rounded bg-[#111] border hover:bg-neutral-800 flex items-center gap-1.5 font-bold tracking-wider
+                    ${isCritical ? 'border-red-900/50 text-red-400' : 'border-amber-900/50 text-amber-400'}`}
+                  >
+                    <FileSearch size={12} />
                     REVIEW REQUIRED
                   </button>
                 </div>
