@@ -23,6 +23,7 @@ export interface PatientInput {
   sourceLabel: string;
   uploadedAt: string; // ISO string
   processingStatus: 'pending' | 'processing' | 'completed' | 'failed';
+  metadata?: Record<string, unknown>;
 }
 
 export type FactCategory = 
@@ -56,12 +57,16 @@ export interface ClinicalConflict {
   requiresHumanReview: true;
   status: 'pending' | 'resolved';
   createdAt: string; // ISO string
+  type?: 'conflict' | 'missed_signal';
+  tags?: string[];
 }
+
+export type ActionPriority = 'critical' | 'high' | 'medium' | 'low' | number;
 
 export interface RecommendedAction {
   id: string;
   patientId: string;
-  priority: number;
+  priority: ActionPriority;
   action: string;
   rationale: string;
   sourceFactIds: string[];
@@ -69,6 +74,9 @@ export interface RecommendedAction {
   status: 'pending' | 'approved' | 'rejected';
   approvedBy?: string;
   approvedAt?: string; // ISO string
+  rejectedBy?: string;
+  rejectedAt?: string; // ISO string
+  rejectionReason?: string;
 }
 
 export type ResourceType = 
@@ -89,6 +97,7 @@ export interface HospitalResource {
 }
 
 export type AuditEventType = 
+  | 'patient_arrived'
   | 'input_uploaded'
   | 'analysis_started'
   | 'analysis_completed'
@@ -110,10 +119,37 @@ export interface AuditEvent {
   createdAt: string; // ISO string
 }
 
+export interface PatientVitals {
+  heartRate?: number;
+  bloodPressure?: string;
+  oxygenSaturation?: number;
+  temperature?: number;
+  respiratoryRate?: number;
+}
+
+export interface PatientSBAR {
+  situation: string;
+  background: string;
+  assessment: string;
+  recommendation: string;
+  extractedAt?: string;
+}
+
 export interface Patient {
   id: string;
+  name?: string;
+  age?: number;
+  gender?: string;
+  incidentId?: string;
+  incidentDescription?: string;
+  arrivalTime?: string;
+  triageCategory?: string;
+  primaryComplaint?: string;
+  statusDescription?: string;
   state: PatientState;
   severity?: 'NORMAL' | 'WARNING' | 'CRITICAL';
+  vitals?: PatientVitals;
+  sbar?: PatientSBAR;
   createdAt: string;
   updatedAt: string;
 }

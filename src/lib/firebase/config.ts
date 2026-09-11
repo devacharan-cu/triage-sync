@@ -20,3 +20,5 @@ const app = getApps().length > 0
 export const db = app ? getFirestore(app) : null;
 export const storage = app ? getStorage(app) : null;
 export const auth = app ? getAuth(app) : null;
+export const isFirebaseConfigured = Boolean(app && firebaseConfig.projectId);
+
