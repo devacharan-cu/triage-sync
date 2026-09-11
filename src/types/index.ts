@@ -12,7 +12,7 @@ export type PatientState =
   | 'ANALYSIS_FAILED'
   | 'HUMAN_REVIEW_REQUIRED';
 
-export type InputType = 'audio' | 'image' | 'document' | 'text';
+export type InputType = 'audio' | 'image' | 'document' | 'text' | 'video';
 
 export interface PatientInput {
   id: string;
@@ -57,7 +57,7 @@ export interface ClinicalConflict {
   requiresHumanReview: true;
   status: 'pending' | 'resolved';
   createdAt: string; // ISO string
-  type?: 'conflict' | 'missed_signal';
+  type?: 'conflict' | 'missed_signal' | 'confirmation' | 'addition' | 'interpretation_change';
   tags?: string[];
 }
 
@@ -93,7 +93,7 @@ export interface HospitalResource {
   quantity: number;
   available: number;
   location: string;
-  updatedAt: string; // ISO string
+  updatedAt: string;
 }
 
 export type AuditEventType = 
@@ -152,4 +152,18 @@ export interface Patient {
   sbar?: PatientSBAR;
   createdAt: string;
   updatedAt: string;
+  archived?: boolean;
+}
+
+export interface ReferenceData {
+  id: string;
+  topic: string;
+  type: 'workflow' | 'medication' | 'protocol' | 'terminology';
+  title: string;
+  content: string;
+  sourceName: string;
+  sourceUrl?: string;
+  referenceVersion?: string;
+  retrievedAt: string;
+  notes?: string;
 }

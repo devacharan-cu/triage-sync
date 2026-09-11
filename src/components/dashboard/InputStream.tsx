@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
-import { PatientInput, ClinicalFact, ClinicalConflict, AuditEvent } from '@/types';
-import { FileAudio, FileText, Image as ImageIcon, CheckCircle2, Loader2, AlertCircle, Upload } from 'lucide-react';
+import { PatientInput, ClinicalFact, ClinicalConflict, AuditEvent, RecommendedAction } from '@/types';
+import { FileAudio, FileText, Image as ImageIcon, Video as VideoIcon, CheckCircle2, Loader2, AlertCircle, Upload } from 'lucide-react';
 import { inMemoryStore } from '@/lib/firebase/in-memory-store';
 import { isFirebaseConfigured } from '@/lib/firebase/config';
 
@@ -23,8 +23,9 @@ export function InputStream({
     setError(null);
 
     try {
-      let type: 'text' | 'audio' | 'image' | 'document' = 'document';
+      let type: 'text' | 'audio' | 'image' | 'document' | 'video' = 'document';
       if (file.type.startsWith('audio/')) type = 'audio';
+      else if (file.type.startsWith('video/')) type = 'video';
       else if (file.type.startsWith('image/')) type = 'image';
       else if (file.type.startsWith('text/')) type = 'text';
 
@@ -64,6 +65,7 @@ export function InputStream({
         data.syncData.facts?.forEach((f: ClinicalFact) => inMemoryStore.setFact(f));
         data.syncData.conflicts?.forEach((c: ClinicalConflict) => inMemoryStore.setConflict(c));
         data.syncData.auditEvents?.forEach((a: AuditEvent) => inMemoryStore.setAuditEvent(a));
+        data.syncData.actions?.forEach((a: RecommendedAction) => inMemoryStore.setAction(a));
       }
       
     } catch (err) {
@@ -78,7 +80,7 @@ export function InputStream({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-between items-center mb-1">
-        <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Raw Input Stream</h3>
+        <h3 className="text-xs font-bold text-neutral-500 dark:text-neutral-500 uppercase tracking-widest">Raw Input Stream</h3>
         <button 
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
@@ -92,7 +94,7 @@ export function InputStream({
           ref={fileInputRef} 
           onChange={handleFileUpload} 
           className="hidden" 
-          accept="audio/*,image/*,text/*,application/pdf"
+          accept="audio/*,video/*,image/*,text/*,application/pdf"
         />
       </div>
 
@@ -104,26 +106,32 @@ export function InputStream({
       )}
 
       {inputs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-48 text-neutral-500 border border-neutral-800 border-dashed rounded-xl">
-          <p className="text-sm font-mono">WAITING_FOR_INPUTS</p>
+        <div className="flex flex-col items-center justify-center h-48 text-neutral-500 dark:text-neutral-500 border border-panel-border border-dashed rounded-xl">
+          <p className="text-sm font-mono mb-2">WAITING_FOR_INPUTS</p>
+          <div className="flex gap-3 text-[10px] uppercase font-bold text-neutral-500">
+            <span className="flex items-center gap-1"><FileAudio size={12}/> Audio</span>
+            <span className="flex items-center gap-1"><VideoIcon size={12}/> Video</span>
+            <span className="flex items-center gap-1"><ImageIcon size={12}/> Image</span>
+            <span className="flex items-center gap-1"><FileText size={12}/> Document</span>
+          </div>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           {inputs.map(input => {
-            const Icon = input.type === 'audio' ? FileAudio : input.type === 'image' ? ImageIcon : FileText;
+            const Icon = input.type === 'audio' ? FileAudio : input.type === 'video' ? VideoIcon : input.type === 'image' ? ImageIcon : FileText;
             const statusColor = 
               input.processingStatus === 'completed' ? 'text-emerald-400' : 
               input.processingStatus === 'failed' ? 'text-red-400' : 'text-blue-400';
               
             return (
-              <div key={input.id} className="p-3 bg-[#111] border border-neutral-800 rounded-xl flex items-center justify-between group hover:border-neutral-700 transition-colors">
+              <div key={input.id} className="p-3 bg-panel border border-panel-border rounded-xl flex items-center justify-between group hover:border-neutral-300 dark:border-neutral-700 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg bg-neutral-900 border border-neutral-800 ${statusColor}`}>
+                  <div className={`p-2 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-panel-border ${statusColor}`}>
                     <Icon size={16} />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-300">{input.sourceLabel}</p>
-                    <p className="text-[10px] text-neutral-500 font-mono mt-0.5">
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{input.sourceLabel}</p>
+                    <p className="text-[10px] text-neutral-500 dark:text-neutral-500 font-mono mt-0.5">
                       {new Date(input.uploadedAt).toLocaleTimeString()}
                     </p>
                   </div>

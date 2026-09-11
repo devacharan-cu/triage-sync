@@ -54,6 +54,7 @@ export const patientSchema = z.object({
   sbar: patientSBARSchema.optional(),
   createdAt: z.string().min(1, 'Created timestamp required'),
   updatedAt: z.string().min(1, 'Updated timestamp required'),
+  archived: z.boolean().optional(),
 });
 
 export const createPatientSchema = z.object({
@@ -71,13 +72,14 @@ export const createPatientSchema = z.object({
   severity: patientSeveritySchema.optional(),
   vitals: patientVitalsSchema.optional(),
   sbar: patientSBARSchema.optional(),
+  archived: z.boolean().optional(),
 });
 
 // ==========================================
 // INPUT SCHEMAS
 // ==========================================
 
-export const inputTypeSchema = z.enum(['audio', 'image', 'document', 'text']);
+export const inputTypeSchema = z.enum(['audio', 'image', 'document', 'text', 'video']);
 
 export const inputProcessingStatusSchema = z.enum([
   'pending',
@@ -163,7 +165,7 @@ export const clinicalConflictSchema = z.object({
   requiresHumanReview: z.literal(true),
   status: z.enum(['pending', 'resolved']),
   createdAt: z.string().min(1),
-  type: z.enum(['conflict', 'missed_signal']).optional(),
+  type: z.enum(['conflict', 'missed_signal', 'confirmation', 'addition', 'interpretation_change']).optional(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -177,7 +179,7 @@ export const createClinicalConflictSchema = z.object({
   requiresHumanReview: z.literal(true).default(true),
   status: z.enum(['pending', 'resolved']).default('pending'),
   createdAt: z.string().optional(),
-  type: z.enum(['conflict', 'missed_signal']).optional(),
+  type: z.enum(['conflict', 'missed_signal', 'confirmation', 'addition', 'interpretation_change']).optional(),
   tags: z.array(z.string()).optional(),
 });
 

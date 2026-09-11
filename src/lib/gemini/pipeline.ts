@@ -1,12 +1,15 @@
+import { updatePatient } from '../firebase/repositories/patients';
+import { generateRecommendations } from './engines/recommendations';
+import { addRecommendedAction } from '../firebase/repositories/actions';
 import { extractFromAudio } from './extractors/audio';
 import { extractFromDocument } from './extractors/document';
-import { detectConflicts } from './engines/conflict';
-import { detectMissedSignals } from './engines/missed-signal';
+import { extractFromVideo } from './extractors/video';
+import { generateCrossReference } from './engines/cross-reference';
 import { updateInput } from '../firebase/repositories/inputs';
 import { addClinicalFact } from '../firebase/repositories/clinicalFacts';
 import { addConflict } from '../firebase/repositories/conflicts';
 import { addAuditEvent } from '../firebase/repositories/audit';
-import { ClinicalFact, PatientSBAR, PatientInput, PatientVitals } from '../../types';
+import { ClinicalFact, PatientSBAR, PatientInput, PatientVitals, ClinicalConflict } from '../../types';
 
 export async function processInputPipeline(
   input: PatientInput,
@@ -17,7 +20,7 @@ export async function processInputPipeline(
 ): Promise<void> {
   try {
     // 1. Update status to processing
-    await updateInput(input.patientId, input.id, {
+        await updateInput(input.patientId, input.id, {
       processingStatus: 'processing'
     });
 
@@ -35,7 +38,13 @@ export async function processInputPipeline(
       const audioResult = await extractFromAudio(base64Data, mimeType);
       sbar = audioResult.sbar;
       extractedFacts = audioResult.facts;
-    } else if (input.type === 'image' || input.type === 'document') {
+    } else if (input.type === 'video') {
+      const videoResult = await extractFromVideo(base64Data, mimeType);
+      if (videoResult.sbar) {
+        sbar = videoResult.sbar;
+      }
+      extractedFacts = videoResult.facts;
+    } else if (input.type === 'image' || input.type === 'document' || input.type === 'text') {
       const docResult = await extractFromDocument(base64Data, mimeType);
       extractedFacts = docResult.facts;
     }
@@ -53,44 +62,57 @@ export async function processInputPipeline(
       savedFacts.push(saved as ClinicalFact);
     }
 
-    const allFacts = [...historicalFacts, ...savedFacts];
+    
 
-    // 4. Run Conflict Engine
-    const conflicts = await detectConflicts(allFacts);
-    for (const conflict of conflicts) {
-      await addConflict(input.patientId, {
-        severity: conflict.severity,
-        topic: conflict.topic,
-        description: conflict.description,
-        conflictingFactIds: conflict.conflictingFactIds,
-        type: 'conflict'
-      });
-      await addAuditEvent(input.patientId, {
-        type: 'conflict_detected',
-        actor: 'ai',
-        description: `Detected conflict: \${conflict.topic}`
-      });
-    }
-
-    // 5. Run Missed-Signal Engine
-    const missedSignals = await detectMissedSignals(historicalFacts, sbar, currentVitals);
-    for (const signal of missedSignals) {
+    // 4 & 5. Run Cross-Reference Intelligence Engine
+    const signals = await generateCrossReference(savedFacts, historicalFacts, sbar, currentVitals);
+    for (const signal of signals) {
       await addConflict(input.patientId, {
         severity: signal.severity,
         topic: signal.topic,
         description: signal.description,
         conflictingFactIds: signal.relatedFactIds || [],
-        type: 'missed_signal',
+        type: signal.type as "conflict" | "missed_signal" | "confirmation" | "addition" | "interpretation_change", // Cast because we extended the type concept
         tags: signal.tags
       });
       await addAuditEvent(input.patientId, {
-        type: 'risk_detected',
+        type: signal.type === 'conflict' ? 'conflict_detected' : 'risk_detected',
         actor: 'ai',
-        description: `Detected missed signal: \${signal.topic}`
+        description: `AI Intelligence (${signal.type}): ${signal.topic}`
+      });
+    }
+
+    
+    // 5.5 Run Recommendation Engine
+    const allFacts = [...historicalFacts, ...savedFacts];
+    const savedSignals = [];
+    for (const signal of signals) {
+       savedSignals.push({
+         id: 'temp', patientId: input.patientId, severity: signal.severity, topic: signal.topic,
+         description: signal.description, conflictingFactIds: signal.relatedFactIds || [], requiresHumanReview: true, status: 'pending',
+        sourceFactIds: [], createdAt: new Date().toISOString(), type: signal.type as "conflict" | "missed_signal" | "confirmation" | "addition" | "interpretation_change"
+       });
+    }
+    const recommendations = await generateRecommendations(allFacts, savedSignals as ClinicalConflict[], sbar, currentVitals);
+    for (const rec of recommendations) {
+      await addRecommendedAction(input.patientId, {
+        priority: rec.priority,
+        action: rec.action,
+        rationale: rec.reason,
+        status: 'pending',
+        sourceFactIds: [],
+        
+      });
+      await addAuditEvent(input.patientId, {
+        type: 'action_recommended',
+        actor: 'ai',
+        description: `AI Recommended Action: ${rec.action}`
       });
     }
 
     // 6. Complete Processing
+    await updatePatient(input.patientId, { state: signals.length > 0 ? 'HUMAN_REVIEW_REQUIRED' : 'COMPLETED' });
+
     await updateInput(input.patientId, input.id, {
       processingStatus: 'completed'
     });

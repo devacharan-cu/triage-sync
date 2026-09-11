@@ -12,8 +12,8 @@ export function RecommendedActions({
 }) {
   if (actions.length === 0) {
     return (
-      <div className="p-4 border border-neutral-800 rounded-xl bg-neutral-900/50 flex flex-col items-center justify-center">
-        <p className="text-neutral-500 font-mono text-sm">NO_RECOMMENDED_ACTIONS</p>
+      <div className="p-4 border border-panel-border rounded-xl bg-neutral-100 dark:bg-neutral-900/50 flex flex-col items-center justify-center">
+        <p className="text-neutral-500 dark:text-neutral-500 font-mono text-sm">No recommendations generated yet</p>
       </div>
     );
   }
@@ -28,7 +28,7 @@ export function RecommendedActions({
         AI recommendation — clinician approval required
       </div>
       {actions.map(action => (
-        <div key={action.id} className="p-3 border border-neutral-800 rounded-xl bg-[#111] flex flex-col gap-2">
+        <div key={action.id} className="p-3 border border-panel-border rounded-xl bg-panel flex flex-col gap-2">
           <div className="flex justify-between items-start gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -37,9 +37,9 @@ export function RecommendedActions({
                 `}>
                   {action.priority} priority
                 </span>
-                <span className="text-xs text-neutral-500 font-mono">ID: {action.id.split('_').pop()}</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-500 font-mono">ID: {action.id.split('_').pop()}</span>
               </div>
-              <h4 className="text-sm font-semibold text-neutral-200 mt-1">{action.action}</h4>
+              <h4 className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mt-1">{action.action}</h4>
             </div>
             
             <div className="flex items-center gap-1 shrink-0">
@@ -65,13 +65,13 @@ export function RecommendedActions({
                   <Check size={12} /> Approved
                 </span>
               ) : (
-                <span className="text-xs text-neutral-500 flex items-center gap-1 border border-neutral-800 bg-neutral-900 px-2 py-1 rounded">
+                <span className="text-xs text-neutral-500 dark:text-neutral-500 flex items-center gap-1 border border-panel-border bg-neutral-100 dark:bg-neutral-900 px-2 py-1 rounded">
                   <X size={12} /> Rejected
                 </span>
               )}
             </div>
           </div>
-          <p className="text-xs text-neutral-400 border-t border-neutral-800/50 pt-2 mt-1">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400 border-t border-panel-border/50 pt-2 mt-1">
             {action.rationale}
           </p>
         </div>

@@ -23,3 +23,9 @@ export const documentExtractionSchema = z.object({
 export type ExtractedFact = z.infer<typeof extractedFactSchema>;
 export type AudioExtraction = z.infer<typeof audioExtractionSchema>;
 export type DocumentExtraction = z.infer<typeof documentExtractionSchema>;
+
+export const videoExtractionSchema = z.object({
+  sbar: patientSBARSchema.optional(),
+  facts: z.array(extractedFactSchema),
+});
+export type VideoExtraction = z.infer<typeof videoExtractionSchema>;

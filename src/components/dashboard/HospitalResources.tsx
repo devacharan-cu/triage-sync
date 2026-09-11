@@ -4,8 +4,8 @@ import { Package } from 'lucide-react';
 export function HospitalResources({ resources }: { resources: HospitalResource[] }) {
   if (resources.length === 0) {
     return (
-      <div className="p-4 border border-neutral-800 rounded-xl bg-neutral-900/50 flex flex-col items-center justify-center h-full">
-        <p className="text-neutral-500 font-mono text-sm">NO_RESOURCES_FOUND</p>
+      <div className="p-4 border border-panel-border rounded-xl bg-neutral-100 dark:bg-neutral-900/50 flex flex-col items-center justify-center h-full">
+        <p className="text-neutral-500 dark:text-neutral-500 font-mono text-sm">NO_RESOURCES_FOUND</p>
       </div>
     );
   }
@@ -18,21 +18,21 @@ export function HospitalResources({ resources }: { resources: HospitalResource[]
         const progressColor = usage > 0.8 ? 'bg-red-500' : usage > 0.5 ? 'bg-amber-500' : 'bg-emerald-500';
 
         return (
-          <div key={res.id} className="p-3 border border-neutral-800 rounded-xl bg-[#111] flex flex-col gap-2">
+          <div key={res.id} className="p-3 border border-panel-border rounded-xl bg-panel flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <div className={`p-1.5 rounded-md ${color}`}>
                 <Package size={14} />
               </div>
-              <h4 className="text-xs font-bold text-neutral-300">{res.name}</h4>
+              <h4 className="text-xs font-bold text-neutral-700 dark:text-neutral-300">{res.name}</h4>
             </div>
             <div className="flex justify-between items-end mt-1">
-              <span className="text-xl font-mono text-neutral-100">{res.available}</span>
-              <span className="text-[10px] text-neutral-500 uppercase">of {res.quantity}</span>
+              <span className="text-xl font-mono text-foreground font-bold">{res.available}</span>
+              <span className="text-[10px] text-neutral-500 dark:text-neutral-500 uppercase">of {res.quantity}</span>
             </div>
             <div className="w-full h-1 bg-neutral-800 rounded-full overflow-hidden mt-1">
               <div className={`h-full ${progressColor}`} style={{ width: `${usage * 100}%` }}></div>
             </div>
-            <p className="text-[9px] text-neutral-500 mt-1 truncate">{res.location}</p>
+            <p className="text-[10px] text-neutral-600 dark:text-neutral-400 mt-1">{res.location}</p>
           </div>
         );
       })}

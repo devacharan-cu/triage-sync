@@ -1,3 +1,5 @@
+import { SYNTHETIC_PATIENTS, SYNTHETIC_FACTS, SYNTHETIC_CONFLICTS, HOSPITAL_RESOURCES } from '../data/indian-reference-data';
+
 import {
   Patient,
   PatientInput,
@@ -7,16 +9,6 @@ import {
   HospitalResource,
   AuditEvent,
 } from '@/types';
-import {
-  DEMO_PATIENT_047,
-  DEMO_OTHER_PATIENTS,
-  DEMO_INPUTS_047,
-  DEMO_FACTS_047,
-  DEMO_CONFLICTS_047,
-  DEMO_ACTIONS_047,
-  DEMO_AUDIT_EVENTS_047,
-  DEMO_RESOURCES,
-} from './demo-data';
 
 class InMemoryStore {
   patients = new Map<string, Patient>();
@@ -36,15 +28,26 @@ class InMemoryStore {
   private actionsListeners = new Map<string, Set<(actions: RecommendedAction[]) => void>>();
   private auditListeners = new Map<string, Set<(events: AuditEvent[]) => void>>();
   private resourcesListeners = new Set<(resources: HospitalResource[]) => void>();
+
   constructor() {
-    this.patients.set(DEMO_PATIENT_047.id, DEMO_PATIENT_047);
-    DEMO_OTHER_PATIENTS.forEach(p => this.patients.set(p.id, p));
-    DEMO_INPUTS_047.forEach(i => this.inputs.set(i.id, i));
-    DEMO_FACTS_047.forEach(f => this.facts.set(f.id, f));
-    DEMO_CONFLICTS_047.forEach(c => this.conflicts.set(c.id, c));
-    DEMO_ACTIONS_047.forEach(a => this.actions.set(a.id, a));
-    DEMO_AUDIT_EVENTS_047.forEach(e => this.auditEvents.set(e.id, e));
-    DEMO_RESOURCES.forEach(r => this.resources.set(r.id, r));
+    this.reset();
+    // Auto-seed for hackathon
+    SYNTHETIC_PATIENTS.forEach(p => this.patients.set(p.id, p));
+    SYNTHETIC_FACTS.forEach(f => this.facts.set(f.id, f));
+    SYNTHETIC_CONFLICTS.forEach(c => this.conflicts.set(c.id, c));
+    HOSPITAL_RESOURCES.forEach(r => this.resources.set(r.id, r));
+    SYNTHETIC_PATIENTS.forEach(p => {
+      const auditId = `audit_${p.id}_init`;
+      const audit: AuditEvent = {
+        id: auditId,
+        patientId: p.id,
+        type: 'patient_arrived',
+        actor: 'system',
+        description: 'Synthetic Indian patient record initialized for demonstration.',
+        createdAt: p.createdAt
+      };
+      this.auditEvents.set(auditId, audit);
+    });
   }
 
   reset() {
@@ -55,10 +58,12 @@ class InMemoryStore {
     this.actions.clear();
     this.auditEvents.clear();
     this.resources.clear();
+    
+    this.notifyAllPatients();
+    this.notifyResources();
   }
 
-  // --- Patients ---
-  getPatient(id: string): Patient | null {
+getPatient(id: string): Patient | null {
     return this.patients.get(id) ?? null;
   }
 

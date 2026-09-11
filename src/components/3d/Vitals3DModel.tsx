@@ -34,8 +34,8 @@ function HeartLattice({ severity }: { severity?: string }) {
 
 export function Vitals3DModel({ severity }: { severity?: string }) {
   return (
-    <div className="w-full h-48 sm:h-64 relative bg-[#0a0a0a] rounded-xl border border-neutral-800 overflow-hidden flex items-center justify-center">
-      <div className="absolute top-2 left-2 text-xs font-mono text-neutral-500 z-10 select-none">
+    <div className="w-full h-48 sm:h-64 relative bg-[#0a0a0a] rounded-xl border border-panel-border overflow-hidden flex items-center justify-center">
+      <div className="absolute top-2 left-2 text-xs font-mono text-neutral-500 dark:text-neutral-500 z-10 select-none">
         HEART_LATTICE_SIM // {severity || 'NORMAL'}
       </div>
       <Canvas camera={{ position: [0, 0, 4] }}>

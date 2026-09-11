@@ -201,3 +201,7 @@ export function subscribePatients(
     return inMemoryStore.subscribeAllPatients(callback);
   }
 }
+
+export async function archivePatient(patientId: string): Promise<Patient> {
+  return updatePatient(patientId, { archived: true });
+}

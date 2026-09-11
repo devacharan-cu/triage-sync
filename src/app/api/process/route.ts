@@ -5,6 +5,7 @@ import { getPatient } from '@/lib/firebase/repositories/patients';
 import { getClinicalFacts } from '@/lib/firebase/repositories/clinicalFacts';
 import { getConflicts } from '@/lib/firebase/repositories/conflicts';
 import { getAuditEvents } from '@/lib/firebase/repositories/audit';
+import { getRecommendedActions } from '@/lib/firebase/repositories/actions';
 
 export async function POST(req: Request) {
   try {
@@ -46,6 +47,7 @@ export async function POST(req: Request) {
     const updatedFacts = await getClinicalFacts(patientId);
     const updatedConflicts = await getConflicts(patientId);
     const updatedAuditEvents = await getAuditEvents(patientId);
+    const updatedActions = await getRecommendedActions(patientId);
 
     return NextResponse.json({ 
       success: true, 
@@ -54,7 +56,8 @@ export async function POST(req: Request) {
         inputs: updatedInputs,
         facts: updatedFacts,
         conflicts: updatedConflicts,
-        auditEvents: updatedAuditEvents
+        auditEvents: updatedAuditEvents,
+        actions: updatedActions
       }
     });
 
