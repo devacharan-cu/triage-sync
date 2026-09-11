@@ -1,11 +1,11 @@
 import { ai, MODELS } from '../config';
 import { engineMissedSignalsSchema, MissedSignal } from '../schema/engines';
-import { ClinicalFact, PatientSBAR } from '../../../types';
+import { ClinicalFact, PatientSBAR, PatientVitals } from '../../../types';
 
 export async function detectMissedSignals(
   historicalFacts: ClinicalFact[],
   currentSBAR: PatientSBAR | undefined,
-  currentVitals: any
+  currentVitals: PatientVitals | undefined
 ): Promise<MissedSignal[]> {
   const prompt = `
 You are a clinical missed-signal engine.
@@ -47,7 +47,7 @@ ${JSON.stringify(currentVitals || {}, null, 2)}
     }
   });
 
-  const text = response.text();
+  const text = response.text;
   if (!text) {
     throw new Error('No text returned from Gemini API.');
   }

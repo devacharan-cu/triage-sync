@@ -1,0 +1,46 @@
+import { ClinicalFact } from '@/types';
+
+export function ClinicalFacts({ facts }: { facts: ClinicalFact[] }) {
+  if (facts.length === 0) {
+    return null;
+  }
+
+  // Group facts by category
+  const grouped = facts.reduce((acc, fact) => {
+    if (!acc[fact.category]) acc[fact.category] = [];
+    acc[fact.category].push(fact);
+    return acc;
+  }, {} as Record<string, ClinicalFact[]>);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {Object.entries(grouped).map(([category, items]) => (
+        <div key={category} className="border border-neutral-800 rounded-xl overflow-hidden bg-[#111]">
+          <div className="px-3 py-1.5 bg-neutral-900 border-b border-neutral-800">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+              {category.replace('_', ' ')}
+            </h4>
+          </div>
+          <div className="p-3 flex flex-col gap-2">
+            {items.map(fact => (
+              <div key={fact.id} className="flex justify-between items-start gap-3">
+                <span className="text-sm text-neutral-200 leading-tight flex-1">{fact.value}</span>
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-1">
+                    <div className="w-12 h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${fact.confidence > 80 ? 'bg-emerald-500' : fact.confidence > 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                        style={{ width: `${fact.confidence}%` }}
+                      />
+                    </div>
+                    <span className="text-[9px] text-neutral-500 font-mono w-5">{fact.confidence}%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

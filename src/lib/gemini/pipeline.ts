@@ -24,11 +24,11 @@ export async function processInputPipeline(
     await addAuditEvent(input.patientId, {
       type: 'analysis_started',
       actor: 'ai',
-      description: \`Started analysis of \${input.type} input: \${input.sourceLabel}\`
+      description: `Started analysis of \${input.type} input: \${input.sourceLabel}`
     });
 
     let sbar: PatientSBAR | undefined;
-    let extractedFacts: any[] = [];
+    let extractedFacts: Array<{ category: 'allergy' | 'medication' | 'medical_history' | 'symptom' | 'vital' | 'diagnosis', value: string, confidence: number }> = [];
 
     // 2. Extraction
     if (input.type === 'audio') {
@@ -68,7 +68,7 @@ export async function processInputPipeline(
       await addAuditEvent(input.patientId, {
         type: 'conflict_detected',
         actor: 'ai',
-        description: \`Detected conflict: \${conflict.topic}\`
+        description: `Detected conflict: \${conflict.topic}`
       });
     }
 
@@ -86,7 +86,7 @@ export async function processInputPipeline(
       await addAuditEvent(input.patientId, {
         type: 'risk_detected',
         actor: 'ai',
-        description: \`Detected missed signal: \${signal.topic}\`
+        description: `Detected missed signal: \${signal.topic}`
       });
     }
 
@@ -98,7 +98,7 @@ export async function processInputPipeline(
     await addAuditEvent(input.patientId, {
       type: 'analysis_completed',
       actor: 'system',
-      description: \`Successfully processed input: \${input.sourceLabel}\`
+      description: `Successfully processed input: \${input.sourceLabel}`
     });
 
   } catch (error) {
@@ -111,7 +111,7 @@ export async function processInputPipeline(
     await addAuditEvent(input.patientId, {
       type: 'analysis_failed',
       actor: 'system',
-      description: \`Failed to process input: \${error instanceof Error ? error.message : String(error)}\`
+      description: `Failed to process input: \${error instanceof Error ? error.message : String(error)}`
     });
 
     throw error;

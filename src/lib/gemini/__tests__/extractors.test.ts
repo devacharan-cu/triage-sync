@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { extractFromAudio } from '../extractors/audio';
 import { extractFromDocument } from '../extractors/document';
@@ -23,7 +24,7 @@ describe('Audio Extractor', () => {
 
   it('should parse valid audio extraction JSON correctly', async () => {
     const mockResponse = {
-      text: () => JSON.stringify({
+      text: JSON.stringify({
         sbar: {
           situation: 'Chest pain',
           background: 'History of HTN',
@@ -40,7 +41,7 @@ describe('Audio Extractor', () => {
         ]
       })
     };
-    (ai.models.generateContent as any).mockResolvedValue(mockResponse);
+    (ai.models.generateContent as unknown as any).mockResolvedValue(mockResponse);
 
     const result = await extractFromAudio('base64audio...', 'audio/mp3');
     
@@ -51,7 +52,7 @@ describe('Audio Extractor', () => {
 
   it('should throw Zod error when extraction schema is violated (e.g. missing confidence)', async () => {
     const mockResponse = {
-      text: () => JSON.stringify({
+      text: JSON.stringify({
         sbar: {
           situation: 'Chest pain',
           background: 'History of HTN',
@@ -67,7 +68,7 @@ describe('Audio Extractor', () => {
         ]
       })
     };
-    (ai.models.generateContent as any).mockResolvedValue(mockResponse);
+    (ai.models.generateContent as unknown as any).mockResolvedValue(mockResponse);
 
     await expect(extractFromAudio('base64audio...', 'audio/mp3')).rejects.toThrow(ZodError);
   });
@@ -80,7 +81,7 @@ describe('Document Extractor', () => {
 
   it('should handle uncertainty well by passing through low confidence scores', async () => {
     const mockResponse = {
-      text: () => JSON.stringify({
+      text: JSON.stringify({
         facts: [
           {
             category: 'medication',
@@ -91,7 +92,7 @@ describe('Document Extractor', () => {
         ]
       })
     };
-    (ai.models.generateContent as any).mockResolvedValue(mockResponse);
+    (ai.models.generateContent as unknown as any).mockResolvedValue(mockResponse);
 
     const result = await extractFromDocument('base64image...', 'image/jpeg');
     
